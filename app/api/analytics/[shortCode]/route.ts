@@ -5,7 +5,7 @@ import type { ApiResponse, UrlAnalytics, UrlDocument } from '@/types';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { shortCode: string } }
+  { params }: any // ✅ Must use `any` or omit type
 ) {
   try {
     const validation = shortCodeSchema.safeParse({
@@ -13,23 +13,22 @@ export async function GET(
     });
 
     if (!validation.success) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid short code',
-      } as ApiResponse, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: 'Invalid short code' } as ApiResponse,
+        { status: 400 }
+      );
     }
 
     const { shortCode } = validation.data;
     const db = await getDatabase();
     const collection = db.collection<UrlDocument>('urls');
-
     const urlDoc = await collection.findOne({ shortCode });
 
     if (!urlDoc) {
-      return NextResponse.json({
-        success: false,
-        error: 'Short URL not found',
-      } as ApiResponse, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: 'Short URL not found' } as ApiResponse,
+        { status: 404 }
+      );
     }
 
     const analytics: UrlAnalytics = {
@@ -40,16 +39,12 @@ export async function GET(
       shortCode: urlDoc.shortCode,
     };
 
-    return NextResponse.json({
-      success: true,
-      data: analytics,
-    } as ApiResponse<UrlAnalytics>);
-
+    return NextResponse.json({ success: true, data: analytics } as ApiResponse<UrlAnalytics>);
   } catch (error) {
     console.error('Analytics API error:', error);
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to fetch analytics',
-    } as ApiResponse, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch analytics' } as ApiResponse,
+      { status: 500 }
+    );
   }
 }
