@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,16 +26,16 @@ export default function UrlList({ refresh }: UrlListProps) {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchUrls = async () => {
+  const fetchUrls = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/urls?limit=20');
       const result = await response.json();
-      
+
       if (result.success && result.data) {
         setUrls(result.data);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to fetch URLs:', error);
       toast({
         title: 'Error',
@@ -46,11 +45,11 @@ export default function UrlList({ refresh }: UrlListProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchUrls();
-  }, [refresh]);
+  }, [fetchUrls, refresh]);
 
   const copyToClipboard = async (shortCode: string) => {
     try {
@@ -59,7 +58,7 @@ export default function UrlList({ refresh }: UrlListProps) {
         title: 'Copied!',
         description: 'Short URL copied to clipboard.',
       });
-    } catch (error) {
+    } catch (error: unknown) {
       toast({
         title: 'Failed to copy',
         description: 'Please copy the URL manually.',
@@ -92,7 +91,7 @@ export default function UrlList({ refresh }: UrlListProps) {
           Your recently shortened URLs and their analytics
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent>
         {urls.length === 0 ? (
           <div className="text-center py-8">
@@ -148,11 +147,7 @@ export default function UrlList({ refresh }: UrlListProps) {
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          asChild
-                        >
+                        <Button variant="ghost" size="sm" asChild>
                           <a
                             href={`/${url.shortCode}`}
                             target="_blank"

@@ -15,6 +15,8 @@ export interface ClickEvent {
 }
 
 export interface ShortenResponse {
+  data: boolean;
+  error: string;
   shortUrl: string;
   shortCode: string;
   originalUrl: string;
